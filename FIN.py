@@ -9,7 +9,7 @@ from numpy import *
 ###third one is an undirected graph, which would be easy to find the connected
 ###subset
 ###file2graph(filename,date)
-###return dir_graph,undir_graph
+###return dir_graph1,dir_graph2,undir_graph
 
 def file2graph(filename,date):
     fr=open(filename)
@@ -17,6 +17,8 @@ def file2graph(filename,date):
     numberOfLines=len(arrayOLines)
 
     dir_graph1={}
+    dir_graph2={}
+    undir_graph={}
     
     for line in arrayOLines:
         line=line.strip()
@@ -30,7 +32,27 @@ def file2graph(filename,date):
             if(dir_graph1.has_key(listFromLine[5])==False):
                 dir_graph1[listFromLine[5]]={}
 
-    return dir_graph1
+            if(dir_graph2.has_key(listFromLine[5])==False):
+                die_graph2[listFromLin[5]]={}
+            else:
+                if(dir_graph2[listFromLine[5]].has_key(listFromLine[2])==False):
+                    dir_graph2[listFromLine[5]][listFromLine[2]]=1
+            if(dir_graph2.has_key(listFromLine[2])==False):
+                dir_graph2[listFromLine[2]]={}
+
+            if(undir_graph.has_key(listFromLine[2]))==False:
+                undir_graph[listFromLine[2]]={}
+            else:
+                if(undir_graph[listFromLine[2]].has_key(listFromLine[5])==False):
+                    undir_graph[listFromLine[2]][listFromLine[5]]=1
+            if(undir_graph.has_key(listFromLine[5]))==False:
+                undir_graph[listFromLine[5]]={}
+            else:
+                if(undir_graph[listFromLine[5]].has_key(listFromLine[2])==False):
+                    undir_graph[listFromLine[5]][listFromLine[2]]=1
+
+    
+    return dir_graph1,dir_graph2,undir_graph
 
 ###This function can calculate the company number for each month from 2003-01 to 2015-12
 ###ComNum(filename)
