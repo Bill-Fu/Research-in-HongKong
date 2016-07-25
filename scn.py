@@ -1,11 +1,11 @@
 #coding:utf-8
 
-###This code is to handle the data in scn.txt
+###This code is to process the data in scn.txt
 
 from numpy import *
 
-defaultFileName="C:/Users/fuhao/Dropbox/scn.txt"
-defaultdate="2003-04"
+defaultFileName1="C:/Users/fuhao/Dropbox/scn.txt"
+defaultdate1="2003-04"
 
 ###This function can convert the file to a network graph, this can return two
 ###graphs, the first is an directed graph, which is the real network, and the second
@@ -15,7 +15,7 @@ defaultdate="2003-04"
 ###file2graph(filename=defaultFileName,date=defaultdate)
 ###return dir_graph1,dir_graph2,undir_graph
 
-def file2graph(filename=defaultFileName,date=defaultdate):
+def file2graph(filename=defaultFileName1,date=defaultdate1):
     fr=open(filename)
     arrayOLines=fr.readlines()
     numberOfLines=len(arrayOLines)
@@ -62,11 +62,10 @@ def file2graph(filename=defaultFileName,date=defaultdate):
 ###ComNum(filename=defaultFileName)
 ###return None
 
-def ComNum(filename=defaultFileName):
+def ComNum(filename=defaultFileName1):
     list1=['2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']
     list2=['01','02','03','04','05','06','07','08','09','10','11','12']
     for i in list1:
         for j in list2:
             graph=file2graph("C:/Users/fuhao/Dropbox/scn.txt",i+'-'+j)
             print i+'-'+j," %s"%len(graph)
-
