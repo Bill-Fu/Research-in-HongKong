@@ -1,17 +1,21 @@
 #coding:utf-8
-###This code is about establish graph from given file, and then evaluate
-###the important node in this network
+
+###This code is to handle the data in scn.txt
+
 from numpy import *
+
+defaultFileName="C:/Users/fuhao/Dropbox/scn.txt"
+defaultdate="2003-04"
 
 ###This function can convert the file to a network graph, this can return two
 ###graphs, the first is an directed graph, which is the real network, and the second
 ###is also an directed graph,but the direct is opposed to the former one, and the 
 ###third one is an undirected graph, which would be easy to find the connected
 ###subset
-###file2graph(filename,date)
+###file2graph(filename=defaultFileName,date=defaultdate)
 ###return dir_graph1,dir_graph2,undir_graph
 
-def file2graph(filename,date):
+def file2graph(filename=defaultFileName,date=defaultdate):
     fr=open(filename)
     arrayOLines=fr.readlines()
     numberOfLines=len(arrayOLines)
@@ -33,7 +37,7 @@ def file2graph(filename,date):
                 dir_graph1[listFromLine[5]]={}
 
             if(dir_graph2.has_key(listFromLine[5])==False):
-                die_graph2[listFromLin[5]]={}
+                dir_graph2[listFromLine[5]]={}
             else:
                 if(dir_graph2[listFromLine[5]].has_key(listFromLine[2])==False):
                     dir_graph2[listFromLine[5]][listFromLine[2]]=1
@@ -55,10 +59,10 @@ def file2graph(filename,date):
     return dir_graph1,dir_graph2,undir_graph
 
 ###This function can calculate the company number for each month from 2003-01 to 2015-12
-###ComNum(filename)
+###ComNum(filename=defaultFileName)
 ###return None
 
-def ComNum(filename):
+def ComNum(filename=defaultFileName):
     list1=['2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']
     list2=['01','02','03','04','05','06','07','08','09','10','11','12']
     for i in list1:
