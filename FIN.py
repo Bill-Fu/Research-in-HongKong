@@ -5,7 +5,9 @@ from numpy import *
 
 ###This function can convert the file to a network graph, this can return two
 ###graphs, the first is an directed graph, which is the real network, and the second
-###is an undirected graph, which would be easy to find the connected subsets
+###is also an directed graph,but the direct is opposed to the former one, and the 
+###third one is an undirected graph, which would be easy to find the connected
+###subset
 ###file2graph(filename,date)
 ###return dir_graph,undir_graph
 
@@ -14,21 +16,21 @@ def file2graph(filename,date):
     arrayOLines=fr.readlines()
     numberOfLines=len(arrayOLines)
 
-    dir_graph={}
+    dir_graph1={}
     
     for line in arrayOLines:
         line=line.strip()
         listFromLine=line.split('","')
         if(len(listFromLine)>5 and listFromLine[1]==date):
-            if(dir_graph.has_key(listFromLine[2])==False):
-                dir_graph[listFromLine[2]]={}
+            if(dir_graph1.has_key(listFromLine[2])==False):
+                dir_graph1[listFromLine[2]]={}
             else:
-                if(dir_graph[listFromLine[2]].has_key(listFromLine[5])==False):
-                    dir_graph[listFromLine[2]][listFromLine[5]]=1
-            if(dir_graph.has_key(listFromLine[5])==False):
-                dir_graph[listFromLine[5]]={}
+                if(dir_graph1[listFromLine[2]].has_key(listFromLine[5])==False):
+                    dir_graph1[listFromLine[2]][listFromLine[5]]=1
+            if(dir_graph1.has_key(listFromLine[5])==False):
+                dir_graph1[listFromLine[5]]={}
 
-    return dir_graph
+    return dir_graph1
 
 ###This function can calculate the company number for each month from 2003-01 to 2015-12
 ###ComNum(filename)
