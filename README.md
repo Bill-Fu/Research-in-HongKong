@@ -1,2 +1,2 @@
 # Research-in-HongKong
-This repository record my research experience in Hong Kong
+This repository record my research work in Hong Kong
