@@ -7,7 +7,8 @@ import copy
 
 defaultFileName1="C:/Users/fuhao/Dropbox/scn.txt"
 defaultdate1="2003-04"
-defLabel=0
+defLabel1=0
+defLabel2=1
 
 G1={}
 G2={}
@@ -91,10 +92,10 @@ def file2graph(filename=defaultFileName1,date=defaultdate1):
         undir_graph[i[1]]={}
 
     for i in l:
-        dir_graph1[i[0]][i[1]]=defLabel
-        dir_graph2[i[1]][i[0]]=defLabel
-        undir_graph[i[0]][i[1]]=defLabel
-        undir_graph[i[1]][i[0]]=defLabel
+        dir_graph1[i[0]][i[1]]=defLabel1
+        dir_graph2[i[1]][i[0]]=defLabel1
+        undir_graph[i[0]][i[1]]=defLabel1
+        undir_graph[i[1]][i[0]]=defLabel1
 
     return dir_graph1,dir_graph2,undir_graph
 
@@ -141,7 +142,12 @@ def CalComPos1():
                     dictOfCom[cus]=tmp
                     listOfPos[-1].add(cus)
 
-    return listOfPos,dictOfCom
+    unused=[]
+    for node in dictOfCom:
+        if(dictOfCom[node]==0):
+            unused.append(node)
+
+    return unused
 
 ###This function remove the loop in the supply chain graph, by removing the last
 ###added connections that may cause loop in network
@@ -180,16 +186,38 @@ def rmLoop(dir_graph1,dir_graph2):
                     
     return new_dir_graph1,new_dir_graph2,rm,Sum,listOfPos
 
+###This function remove the unused node in the graph
+###rmUnused()
+###return dir_graph1,dir_graph2
+def rmUnused():
+    dir_graph1,dir_graph2,undir_graph=file2graph()
+    unused=CalComPos1()
+    for item in unused:
+        del dir_graph1[item]
+        del dir_graph2[item]
+
+    for sup in dir_graph1:
+        for item in unused:
+            if(item in dir_graph1[sup]):
+                del dir_graph1[sup][item]
+
+    for sup in dir_graph2:
+        for item in unused:
+            if(item in dir_graph2[sup]):
+                del dir_graph2[sup][item]
+    return dir_graph1,dir_graph2    
+
 ###This function remove the loop in the supply chain graph, by removing the last
 ###added connections that may cause loop in network,this is a new function
 ###because the last one need too much memory
 ###rmLoopNew(dir_graph1,dir_graph2,undir_graph)
-###return new_dir_graph1,new_dir_graph2,new_undir_graph
+###return new_dir_graph1,new_dir_graph2
 def rmLoopNew(dir_graph1,dir_graph2):    
     Stack=[]
     path=[]
     fir_sup=[]
-
+    Visited=set()
+    
     for node in dir_graph2:
         if(len(dir_graph2[node])==0):
             fir_sup.append(node)
@@ -198,13 +226,17 @@ def rmLoopNew(dir_graph1,dir_graph2):
     for node in fir_sup:
         print left,"to be processed"
         left-=1
+        
+        Visited.add(node)
+        print len(Visited),"nodes have been visited"
+        
         path.append(node)
         Stack.append([])
         #print path
         for item in dir_graph1[node]:
             Stack[0].append(item)
         while(len(path)!=0):
-            while(len(dir_graph1[Stack[-1][-1]])!=0 and (Stack[-1][-1] in path)==False):
+            while((Stack[-1][-1] in path)==False and len(dir_graph1[Stack[-1][-1]])!=0 and (Stack[-1][-1] in Visited)==False):
                 Stack.append([])
                 for item in dir_graph1[Stack[-2][-1]]:
                     Stack[-1].append(item)
@@ -214,9 +246,69 @@ def rmLoopNew(dir_graph1,dir_graph2):
                 del dir_graph1[path[-1]][Stack[-1][-1]]
                 del dir_graph2[Stack[-1][-1]][path[-1]]
                 print "Del",path[-1],"->",Stack[-1][-1]
+            else:
+                if(len(dir_graph1[Stack[-1][-1]])==0):
+                    Visited.add(Stack[-1][-1])
+                    print len(Visited),"nodes have been visited"
             Stack[-1].pop()
             while(len(Stack)!=0 and len(Stack[-1])==0):
                 Stack.pop()
-                path.pop()
+                Visited.add(path.pop())
+                print len(Visited),"nodes have been visited"
                 #print path
                 
+    return dir_graph1,dir_graph2
+###This function can find if there any loop in the graph
+###findLoop(dir_graph1,dir_graph2)
+###return none
+def findLoop(dir_graph1,dir_graph2):
+    graph1=copy.deepcopy(dir_graph1)
+    graph2=copy.deepcopy(dir_graph2)
+
+    Stack=[]
+    AllNode=set()
+    
+    for node in graph2:
+        if(len(graph2[node])==0):
+            Stack.append(node)
+
+    for node in graph1:
+        AllNode.add(node)
+
+    while(len(Stack)!=0):
+        item=Stack.pop()
+        AllNode.remove(item)
+        for node in graph1[item]:
+            del graph2[node][item]
+            if(len(graph2[node])==0):
+                Stack.append(node)
+        del graph1[item]
+    if(len(AllNode)==0):
+        print "No Loop"
+    else:
+        print "Have Loop"
+###This function can calculate the average position of Company, but the memory is
+###limited, so we need to change the algorithm
+###CalPos(dir_graph1,dir_graph2)
+###return Pos_dict,Com_level
+def CalPos(dir_graph1,dir_graph2):
+    Pos_dict={}
+    Com_level=[[]]
+    
+    for node in dir_graph1:
+        Pos_dict[node]=[]
+    
+    for node in dir_graph2:
+        if(len(dir_graph2[node])==0):
+            Com_level[-1].append(node)
+            Pos_dict[node].append(1)
+
+    while(len(Com_level[-1])!=0):
+        print "level ",len(Com_level)," complete, number is ",len(Com_level[-1])
+        Com_level.append([])
+        for node in Com_level[-2]:
+            for cus in dir_graph1[node]:
+                Com_level[-1].append(cus)
+                Pos_dict[cus].append(len(Com_level))
+
+    return Pos_dict,Com_level
