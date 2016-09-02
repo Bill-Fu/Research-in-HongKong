@@ -5,7 +5,9 @@
 from numpy import *
 
 defaultFileName1="C:/Users/fuhao/Dropbox/Industry/ac8a0f06a2d2d0b8.txt"
-
+###############################################################################
+###CONSTRUCT CUSIP ID TO NAICS DICTIONARY
+###############################################################################
 ###This function convert the file to a dict, which you can use 6 digits cusip id
 ###to find its naics id
 ###file2dict(filename=defaultFileName1)

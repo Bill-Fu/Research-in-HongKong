@@ -4,12 +4,21 @@
 
 from numpy import *
 import copy
+from collections import deque
 
-defaultFileName1="C:/Users/fuhao/Dropbox/scn.txt"
+
+##########################
+#####DEFINE SOME CONSTANT
+##########################
+defaultFileName1="C:/Users/fuhao/Dropbox/cusip.txt"
 defaultdate1="2003-04"
 defLabel1=0
 defLabel2=1
 
+
+#######################
+####Test Graph G1,G2
+#######################
 G1={}
 G2={}
 G1[1]={}
@@ -51,16 +60,17 @@ G2[3][6]=0
 G2[8][6]=0
 G2[8][7]=0
 
+
+###################################
+###CONSTRUCT THE SUPPLY CHAIN GRAPH
+###################################
 ###This function can convert the file to a network graph, this can return two
-###graphs, the first is an directed graph, which is the real network, and the second
-###is also an directed graph,but the direct is opposed to the former one, and the 
-###third one is an undirected graph, which would be easy to find the connected
-###subset
+###graphs, the first is an directed graph called dir_graph1, which is the real network, and the second
+###is also an directed graph called dir_graph2,but the direct is opposed to the former one.
 ###I rewrite the code so that the keys of the graph will be cusip id(6 digits)
 ###instead of the name of the company
 ###file2graph(filename=defaultFileName,date=defaultdate)
 ###return dir_graph1,dir_graph2,undir_graph
-
 def file2graph(filename=defaultFileName1,date=defaultdate1):
     fr=open(filename)
     arrayOLines=fr.readlines()
@@ -97,12 +107,16 @@ def file2graph(filename=defaultFileName1,date=defaultdate1):
         undir_graph[i[0]][i[1]]=defLabel1
         undir_graph[i[1]][i[0]]=defLabel1
 
-    return dir_graph1,dir_graph2,undir_graph
+    return dir_graph1,dir_graph2
 
+	
+	
+########################################################################
+###COUNT THE NUMBER OF COMPANY OF EACH MONTH TO ESTIMATE THE DATA SIZE
+########################################################################	
 ###This function can calculate the company number for each month from 2003-01 to 2015-12
 ###ComNum(filename=defaultFileName)
 ###return None
-
 def ComNum(filename=defaultFileName1):
     list1=['2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']
     list2=['01','02','03','04','05','06','07','08','09','10','11','12']
@@ -111,13 +125,14 @@ def ComNum(filename=defaultFileName1):
             graph1,graph2,graph3=file2graph("C:/Users/fuhao/Dropbox/scn.txt",i+'-'+j)
             print i+'-'+j," %s"%len(graph3)
 
-###This function calculate the position of a given company in the supply chain
-###for the companies that are not supplied by other companies, the position is 1
-###the total number of listOfPos may be not equal to the total number of dictOfCom, cause there are loops
-###CalComPos1(dir_graph1,dir_graph2)
-###return listOfPos,dictOfCom
+			
+######################################################
+###Return NODES NOT IN THE MAIN SUPPLY CHAIN NETWORK
+######################################################
+###CalComPos1()
+###return unused
 def CalComPos1():
-    graph1,graph2,graph3=file2graph()
+    graph1,graph2=file2graph()
 
     listOfPos=[]
     listOfPos.append(set())
@@ -149,48 +164,14 @@ def CalComPos1():
 
     return unused
 
-###This function remove the loop in the supply chain graph, by removing the last
-###added connections that may cause loop in network
-###rmLoop(dir_graph1,dir_graph2,undir_graph)
-###return new_dir_graph1,new_dir_graph2,new_undir_graph
-def rmLoop(dir_graph1,dir_graph2):
-    listOfPos=[[]]
-    new_dir_graph1=copy.deepcopy(dir_graph1)
-    new_dir_graph2=copy.deepcopy(dir_graph2)
-    Sum=0
-    rm=0
-    
-    for node in dir_graph2:
-        if(len(dir_graph2[node])==0):
-            tmpList=[]
-            tmpList.append(node)
-            listOfPos[-1].append(tmpList)
-
-    while(len(listOfPos[-1])!=0):
-        listOfPos.append([])
-        for node in listOfPos[-2]:
-            for cus in dir_graph1[node[-1]]:
-                Sum+=1
-                if(cus in node):
-                    if(new_dir_graph1[node[-1]].has_key(cus)):
-                        del new_dir_graph1[node[-1]][cus]
-                        del new_dir_graph2[cus][node[-1]]
-                        rm+=1
-                else:
-                    tmpLis=[]
-                    for item in node:
-                        tmpLis.append(item)
-                    tmpLis=copy.deepcopy(node)
-                    tmpLis.append(cus)
-                    listOfPos[-1].append(tmpLis)
-                    
-    return new_dir_graph1,new_dir_graph2,rm,Sum,listOfPos
-
-###This function remove the unused node in the graph
+	
+####################################################	
+###REMOVE UNUSED NODE IN THE SUPPLY CHAIN NETWORK 
+####################################################
 ###rmUnused()
 ###return dir_graph1,dir_graph2
 def rmUnused():
-    dir_graph1,dir_graph2,undir_graph=file2graph()
+    dir_graph1,dir_graph2=file2graph()
     unused=CalComPos1()
     for item in unused:
         del dir_graph1[item]
@@ -206,11 +187,13 @@ def rmUnused():
             if(item in dir_graph2[sup]):
                 del dir_graph2[sup][item]
     return dir_graph1,dir_graph2    
-
+######################################################
+###REMOVE LOOP IN THE SUPPLY CHAIN NETWORK
+######################################################
 ###This function remove the loop in the supply chain graph, by removing the last
 ###added connections that may cause loop in network,this is a new function
 ###because the last one need too much memory
-###rmLoopNew(dir_graph1,dir_graph2,undir_graph)
+###rmLoopNew(dir_graph1,dir_graph2)
 ###return new_dir_graph1,new_dir_graph2
 def rmLoopNew(dir_graph1,dir_graph2):    
     Stack=[]
@@ -221,11 +204,11 @@ def rmLoopNew(dir_graph1,dir_graph2):
     for node in dir_graph2:
         if(len(dir_graph2[node])==0):
             fir_sup.append(node)
-    left=len(fir_sup)
+    nodeLeft=len(fir_sup)
     
     for node in fir_sup:
-        print left,"to be processed"
-        left-=1
+        print nodeLeft,"to be processed"
+        nodeLeft-=1
         
         Visited.add(node)
         print len(Visited),"nodes have been visited"
@@ -258,6 +241,13 @@ def rmLoopNew(dir_graph1,dir_graph2):
                 #print path
                 
     return dir_graph1,dir_graph2
+	
+	
+	
+	
+##################################################
+#######TEST IF THERE ANY LOOP IN THE GRAPH
+##################################################
 ###This function can find if there any loop in the graph
 ###findLoop(dir_graph1,dir_graph2)
 ###return none
@@ -287,28 +277,63 @@ def findLoop(dir_graph1,dir_graph2):
         print "No Loop"
     else:
         print "Have Loop"
+
+		
+		
+
+###############################################################################
+###CALCULATE THE AVERAGE TIER OF COMPANIES IN SUPPLY CHAIN NETWORK
+###############################################################################
 ###This function can calculate the average position of Company, but the memory is
 ###limited, so we need to change the algorithm
 ###CalPos(dir_graph1,dir_graph2)
-###return Pos_dict,Com_level
-def CalPos(dir_graph1,dir_graph2):
+###return Com_Pos_dict
+
+def CalPos1(dir_graph1,dir_graph2):
+
     Pos_dict={}
-    Com_level=[[]]
-    
+    Com_level=[]
+    Com_Pos_dict={}
+    Com_level.append(set())
+    times=2
     for node in dir_graph1:
-        Pos_dict[node]=[]
-    
+        Pos_dict[node]={}
+
     for node in dir_graph2:
         if(len(dir_graph2[node])==0):
-            Com_level[-1].append(node)
-            Pos_dict[node].append(1)
-
+            Com_level[-1].add(node)
+    
+    Com_level.append(set())
+    for node in Com_level[-2]:
+        for item in dir_graph1[node]:
+            Pos_dict[item][node]=[2L,1L]
+            Com_level[-1].add(item)
+    	
     while(len(Com_level[-1])!=0):
-        print "level ",len(Com_level)," complete, number is ",len(Com_level[-1])
-        Com_level.append([])
+        print "level ",times," complete, total number is ",len(Com_level[-1])
+        times+=1
+        del Com_level[-2]
+        Com_level.append(set())
         for node in Com_level[-2]:
             for cus in dir_graph1[node]:
-                Com_level[-1].append(cus)
-                Pos_dict[cus].append(len(Com_level))
-
-    return Pos_dict,Com_level
+                Com_level[-1].add(cus)
+                Pos_dict[cus][node]=[0L,0L]
+                S=0
+                n=0
+                for item in Pos_dict[node]:
+                    S=S+(Pos_dict[node][item][0]+1)*Pos_dict[node][item][1]
+                    n=n+Pos_dict[node][item][1]
+                Pos_dict[cus][node][0]=float(S)/n
+                Pos_dict[cus][node][1]=n
+    for node in Pos_dict:
+        Sum=0
+        num=0
+        if(len(Pos_dict[node])!=0):
+            for item in Pos_dict[node]:
+                Sum+=Pos_dict[node][item][0]*Pos_dict[node][item][1]
+                num+=Pos_dict[node][item][1]
+            Com_Pos_dict[node]=Sum/num
+        else:
+            Com_Pos_dict[node]=1
+            
+    return Com_Pos_dict
